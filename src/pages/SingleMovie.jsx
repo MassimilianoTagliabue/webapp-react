@@ -2,13 +2,21 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Review from "../components/Review";
+import ReviewForm from "../components/ReviewForm";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+const initialValue = {
+    name:"",
+    text:"",
+    vote:0,
+}
 
 function SingleMovie() {
     const { id } = useParams("");
     const [movie, setMovie] = useState({});
     const [review, setReview] = useState([])
+    const [formData, setFormData] =useState(initialValue);
 
     useEffect(() => {
         getMovie();
@@ -22,9 +30,22 @@ function SingleMovie() {
         })
     }
 
+
+    const storeReview = (formData) =>{
+        console.log("Submit review", id, formData);
+
+        axios.post(`${backendUrl}/movies/${id}/reviews`, formData).then((resp) =>{
+            //azzeriamo i campi del form
+            setFormData(initialValue)
+            //chiediamo i dati aggiornati
+            getMovie();
+        })
+    }
+    
+
     return (
         <>
-            <div className="card ms-width col-6 my-5 mx-5" key={movie.id}>
+            <div className="card ms-width col-5 my-5 mx-5" key={movie.id}>
                 <img src={`${backendUrl}/images/${movie.image}`} className="card-img-top" alt={movie.title} />
                 <div className="card-body">
                     <h5 className="card-title">{movie.title}</h5>
@@ -37,11 +58,23 @@ function SingleMovie() {
                 </ul>
             </div>
 
-            <div className="container">
+            
+
+            <div className="container ">
+                {/* inserimento recensione */}
+                <div className=" col-8 my-5 p-5">
+                    <ReviewForm 
+                        formData={formData}
+                        setFormData={setFormData}
+                        onSubmitFunction={storeReview}
+                    />
+                </div>
+
+                {/* lista di recensioni */}
                 <ul>
-                    {review.map((curReview) =>{
-                        return(
-                        <Review key={curReview.id} review={curReview}/>
+                    {review.map((curReview) => {
+                        return (
+                            <Review key={curReview.id} review={curReview} />
                         )
                     })}
                 </ul>
